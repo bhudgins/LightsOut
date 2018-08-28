@@ -1,137 +1,102 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace LightsOut
 {
     public partial class MainForm : Form
     {
-        private const int GridOffset = 25;
-        private const int GridLength = 200;
-        private const int NumCells = 3;
-        private const int CellLength = GridLength / NumCells;
+        private const int GridOffset = 25;     // Distance from upper-left side of window
+        private int gridLength = 200;           // Size in pixels of grid
 
-        private bool[,] grid;
-        private Random rand;
+        private GameBoard gameBoard;
+
+        private AboutForm aboutBox;             // About dialog box
 
         public MainForm()
         {
             InitializeComponent();
 
-            rand = new Random();
-            grid = new bool[NumCells, NumCells];
+            gameBoard = new GameBoard();
 
-            for(int r = 0; r< NumCells; r++)
-            {
-                for(int c = 0; c < NumCells; c++)
-                {
-                    grid[r, c] = true;
-                }
-            }
-
+            // Default to 3x3 grid
+            //x3ToolStripMenuItem.Checked = true;
         }
 
-        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        private void StartNewGame()
         {
+            gameBoard.NewGame();
 
-        }
-
-        private void toolStripMenuItem2_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void toolStripMenuItem2_Click_1(object sender, EventArgs e)
-        {
-
+            // Redraw the grid
+            Invalidate();
         }
 
         private void MainForm_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
-            for(int r = 0; r < NumCells; r++)
-            {
-                for(int c = 0; c < NumCells; c++)
+
+            int cellLength = gridLength / gameBoard.NumCells;
+
+            for (int r = 0; r < gameBoard.NumCells; r++)
+                for (int c = 0; c < gameBoard.NumCells; c++)
                 {
+                    // Get proper pen and brush for on/off grid section
                     Brush brush;
                     Pen pen;
 
-                    if(grid[r,c])
+                    if (gameBoard.GetBoardValue(r, c))
                     {
                         pen = Pens.Black;
-                        brush = Brushes.White;
+                        brush = Brushes.White;	// On
                     }
                     else
                     {
                         pen = Pens.White;
-                        brush = Brushes.Black;
+                        brush = Brushes.Black;	// Off
                     }
 
-                    int x = c * CellLength + GridOffset;
-                    int y = r * CellLength + GridOffset;
+                    // Determine (x,y) coord of row and col to draw rectangle                    
+                    int x = c * cellLength + GridOffset;
+                    int y = r * cellLength + GridOffset;
 
-                    g.DrawRectangle(pen, x, y, CellLength, CellLength);
-                    g.FillRectangle(brush, x + 1, y + 1, CellLength - 1, CellLength - 1);
+                    // Draw outline and inner rectangle
+                    g.DrawRectangle(pen, x, y, cellLength, cellLength);
+                    g.FillRectangle(brush, x + 1, y + 1, cellLength - 1, cellLength - 1);
                 }
-            }
+
         }
 
         private void MainForm_MouseDown(object sender, MouseEventArgs e)
         {
-            if (e.X < GridOffset || e.X > CellLength * NumCells + GridOffset ||
-                e.Y < GridOffset || e.Y > CellLength * NumCells + GridOffset)
+            int cellLength = gridLength / gameBoard.NumCells;
+
+            // Make sure click was inside the grid
+            if (e.X < GridOffset || e.X > cellLength * gameBoard.NumCells + GridOffset ||
+                e.Y < GridOffset || e.Y > cellLength * gameBoard.NumCells + GridOffset)
                 return;
 
-            int r = (e.Y - GridOffset)/ CellLength;
+            // Find row, col of mouse press
+            int r = (e.Y - GridOffset) / cellLength;
+            int c = (e.X - GridOffset) / cellLength;
 
-            int c = (e.X - GridOffset) / CellLength;
+            // Invert selected box and all surrounding boxes
+            gameBoard.MakeMove(r, c);
 
-            for (int i = r - 1; i <= r + 1; i++)
-                for (int j = c - 1; j <= c + 1; j++)
-                    if (i >= 0 & i < NumCells && j >= 0 && j < NumCells)
-                        grid[i, j] = !grid[i, j];
-
+            // Redraw grid
             this.Invalidate();
-            if(PlayerWon())
+
+            // Check to see if puzzle has been solved
+            if (gameBoard.PlayerWon())
             {
-                MessageBox.Show(this, "Congratulations! You've won!", "Lights Out!",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // Display winner dialog box just inside window
+                MessageBox.Show(this, "Congratulations!  You've won!", "Lights Out!",
+                          MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-        }
-
-        private bool PlayerWon()
-        {
-            for (int r = 0; r < NumCells; r++)
-            {
-                for (int c = 0; c < NumCells; c++)
-                {
-                    if (grid[r, c])
-                        return false;
-                }
-
-            }
-
-            return true;
         }
 
         private void newGameButton_Click(object sender, EventArgs e)
         {
-            for (int r = 0; r < NumCells; r++)
-            {
-                for (int c = 0; c < NumCells; c++)
-                {
-                    grid[r, c] = rand.Next(2) == 1;
-                }
-            }
-
-            this.Invalidate();
-
+            StartNewGame();
         }
 
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
@@ -149,10 +114,26 @@ namespace LightsOut
             exitButton_Click(sender, e);
         }
 
-        private void aboutToolStripMenuItem1_Click(object sender, EventArgs e)
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            AboutForm aboutBox = new AboutForm();
+            if (aboutBox == null)
+                aboutBox = new AboutForm();
             aboutBox.ShowDialog(this);
+
+        }
+
+
+
+        private void MainForm_Resize(object sender, EventArgs e)
+        {
+            gridLength = Math.Min(this.Width - (GridOffset * 2) - 10,
+                this.Height - (GridOffset * 2) - 65);
+            this.Invalidate();
+
+            if (this.Height < 100)
+            {
+                this.Height = 100;
+            }
         }
     }
 }
