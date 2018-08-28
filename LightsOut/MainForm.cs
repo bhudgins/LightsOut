@@ -114,7 +114,7 @@ namespace LightsOut
             exitButton_Click(sender, e);
         }
 
-        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        private void aboutToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             if (aboutBox == null)
                 aboutBox = new AboutForm();
@@ -124,16 +124,16 @@ namespace LightsOut
 
 
 
-        private void MainForm_Resize(object sender, EventArgs e)
-        {
-            gridLength = Math.Min(this.Width - (GridOffset * 2) - 10,
-                this.Height - (GridOffset * 2) - 65);
-            this.Invalidate();
+        //private void MainForm_Resize(object sender, EventArgs e)
+        //{
+        //    gridLength = Math.Min(this.Width - (GridOffset * 2) - 10,
+        //        this.Height - (GridOffset * 2) - 65);
+        //    this.Invalidate();
 
-            if (this.Height < 100)
-            {
-                this.Height = 100;
-            }
-        }
+        //    if (this.Height < 100)
+        //    {
+        //        this.Height = 100;
+        //    }
+        //}
     }
 }

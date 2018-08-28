@@ -85,13 +85,8 @@
             // 
             // aboutToolStripMenuItem
             // 
-            this.aboutToolStripMenuItem.CheckOnClick = true;
-            this.aboutToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.aboutToolStripMenuItem1});
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(61, 29);
-            this.aboutToolStripMenuItem.Text = "Help";
-            this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(12, 29);
             // 
             // aboutToolStripMenuItem1
             // 
@@ -135,7 +130,6 @@
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Lights Out!";
-            this.Load += new System.EventHandler(this.MainForm_Load);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.MainForm_Paint);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseDown);
             this.menuStrip1.ResumeLayout(false);
